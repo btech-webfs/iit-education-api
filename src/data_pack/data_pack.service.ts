@@ -39,11 +39,32 @@ export class DataPackService {
   }
 
   async remove(id: string) {
-    const deletedDataPack = await this.prisma.dataPack.delete(
+    const clientKeys = await this.prisma.clientKey.findMany({
+      where: {
+        dataPackIds: {
+          has: id
+        }
+      }
+    })
+
+    if (clientKeys?.length) {
+      for await (const clK of clientKeys) {
+        await this.prisma.clientKey.update(
+          {
+            where: { id: clK.id },
+            data: {
+              DataPacks: {
+                disconnect: { id }
+              }
+            }
+          }
+        )
+      }
+    }
+    return this.prisma.dataPack.delete(
       {
         where: { id }
       }
     )
-    return deletedDataPack
   }
 }

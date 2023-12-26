@@ -65,21 +65,21 @@ export class DataService {
             id: updateDatumDto.topicId
           }
         },
-        Grades: updateDatumDto.gradeIds ? {
+        Grades: updateDatumDto.gradeIds && (updateDatumDto.gradeIds.length ? {
           connect: updateDatumDto.gradeIds.map(id => ({ id }))
         } : {
           set: []
-        },
+        }),
         Type: {
           connect: updateDatumDto.dataTypeId && {
             id: updateDatumDto.dataTypeId
           }
         },
-        DataPacks: updateDatumDto.dataPackIds.length ? {
+        DataPacks: updateDatumDto.dataPackIds && (updateDatumDto.dataPackIds.length ? {
           connect: updateDatumDto.dataPackIds.map(id => ({ id }))
         } : {
           set: []
-        },
+        }),
         name: updateDatumDto.name,
         thumbnail: updateDatumDto.thumbnail,
         author: updateDatumDto.author,
@@ -90,6 +90,29 @@ export class DataService {
   }
 
   async remove(id: string): Promise<Data | null> {
+    const dataPacks = await this.prisma.dataPack.findMany({
+      where: {
+        clientKeyIds: {
+          has: id
+        }
+      }
+    })
+
+    if (dataPacks?.length) {
+      for await (const dtP of dataPacks) {
+        await this.prisma.dataPack.update(
+          {
+            where: { id: dtP.id },
+            data: {
+              Data: {
+                disconnect: { id }
+              }
+            }
+          }
+        )
+      }
+    }
+
     return this.prisma.data.delete({
       where: { id }
     });
