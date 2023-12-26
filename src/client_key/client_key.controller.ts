@@ -1,15 +1,13 @@
 import {
-  Controller,
-  Get,
-  Post,
   Body,
-  Patch,
-  Param,
+  Controller,
   Delete,
+  Get,
+  Param,
+  Post
 } from '@nestjs/common';
 import { ClientKeyService } from './client_key.service';
 import { CreateClientKeyDto } from './dto/create-client_key.dto';
-import { UpdateClientKeyDto } from './dto/update-client_key.dto';
 
 @Controller('client-key')
 export class ClientKeyController {
@@ -30,13 +28,13 @@ export class ClientKeyController {
     return this.clientKeyService.findOne(id);
   }
 
-  @Patch(':id')
-  update(
-    @Param('id') id: string,
-    @Body() updateClientKeyDto: UpdateClientKeyDto,
-  ) {
-    return this.clientKeyService.update(id, updateClientKeyDto);
-  }
+  // @Patch(':id')
+  // update(
+  //   @Param('id') id: string,
+  //   @Body() updateClientKeyDto: UpdateClientKeyDto,
+  // ) {
+  //   return this.clientKeyService.update(id, updateClientKeyDto);
+  // }
 
   @Delete(':id')
   remove(@Param('id') id: string) {

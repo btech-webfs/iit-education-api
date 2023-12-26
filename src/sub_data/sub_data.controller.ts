@@ -1,12 +1,11 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UploadedFile, UseInterceptors } from '@nestjs/common';
-import { SubDataService } from './sub_data.service';
-import { CreateSubDatumDto } from './dto/create-sub_datum.dto';
-import { UpdateSubDatumDto } from './dto/update-sub_datum.dto';
+import { Body, Controller, Delete, Get, Param, Post, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
-import { v4 as uuid } from 'uuid';
-import { PrismaService } from 'src/prisma/prisma.service';
 import { unlink } from 'fs';
+import { diskStorage } from 'multer';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { v4 as uuid } from 'uuid';
+import { CreateSubDatumDto } from './dto/create-sub_datum.dto';
+import { SubDataService } from './sub_data.service';
 
 @Controller('sub-data')
 export class SubDataController {
@@ -48,10 +47,10 @@ export class SubDataController {
     return this.subDataService.findOne(id);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateSubDatumDto: UpdateSubDatumDto) {
-    return this.subDataService.update(id, updateSubDatumDto);
-  }
+  // @Patch(':id')
+  // update(@Param('id') id: string, @Body() updateSubDatumDto: UpdateSubDatumDto) {
+  //   return this.subDataService.update(id, updateSubDatumDto);
+  // }
 
   @Delete(':id')
   remove(@Param('id') id: string) {

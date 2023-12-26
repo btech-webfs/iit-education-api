@@ -1,7 +1,6 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post } from '@nestjs/common';
 import { DeviceService } from './device.service';
 import { CreateDeviceDto } from './dto/create-device.dto';
-import { UpdateDeviceDto } from './dto/update-device.dto';
 
 @Controller('device')
 export class DeviceController {
@@ -22,10 +21,10 @@ export class DeviceController {
     return this.deviceService.findOne(id);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateDeviceDto: UpdateDeviceDto) {
-    return this.deviceService.update(id, updateDeviceDto);
-  }
+  // @Patch(':id')
+  // update(@Param('id') id: string, @Body() updateDeviceDto: UpdateDeviceDto) {
+  //   return this.deviceService.update(id, updateDeviceDto);
+  // }
 
   @Delete(':id')
   remove(@Param('id') id: string) {

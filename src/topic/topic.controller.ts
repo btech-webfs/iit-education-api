@@ -1,7 +1,6 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
-import { TopicService } from './topic.service';
+import { Body, Controller, Delete, Get, Param, Post } from '@nestjs/common';
 import { CreateTopicDto } from './dto/create-topic.dto';
-import { UpdateTopicDto } from './dto/update-topic.dto';
+import { TopicService } from './topic.service';
 
 @Controller('topic')
 export class TopicController {
@@ -22,10 +21,10 @@ export class TopicController {
     return this.topicService.findOne(id);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateTopicDto: UpdateTopicDto) {
-    return this.topicService.update(id, updateTopicDto);
-  }
+  // @Patch(':id')
+  // update(@Param('id') id: string, @Body() updateTopicDto: UpdateTopicDto) {
+  //   return this.topicService.update(id, updateTopicDto);
+  // }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
