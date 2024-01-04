@@ -35,6 +35,6 @@ async function bootstrap() {
   );
   app.useGlobalFilters(new PrismaExceptionFilter());
 
-  await app.listen(220899);
+  await app.listen(22899);
 }
 bootstrap();
