@@ -25,7 +25,7 @@ export class AuthService {
     if (!key) {
       throw new BadRequestException('Invalid key')
     } else {
-      if (key.limit > key.deviceIds.length || key.Devices.length) {
+      if (!key.limit || key.limit > key.deviceIds.length || key.Devices.length) {
         if (key.Devices.length) {
           await this.prisma.device.update({
             where: {
@@ -94,7 +94,6 @@ export class AuthService {
   }
 
   async signIn(id: string, password: string) {
-    console.log(process.env.ID, process.env.PASSWORD);
     if (process.env.ID === id && process.env.PASSWORD === password) {
       const payload = { admin: true };
       return {
@@ -102,6 +101,45 @@ export class AuthService {
       };
     } else {
       throw new UnauthorizedException();
+    }
+  }
+
+  async getData(key: string) {
+    const foundkey = await this.prisma.clientKey.findUnique({
+      where: {
+        key
+      }
+    })
+    if (!foundkey) {
+      throw new UnauthorizedException('Invalid key');
+    } else {
+      const subjects = await this.prisma.subject.findMany()
+      const grades = await this.prisma.grade.findMany()
+      const topics = await this.prisma.topic.findMany()
+      const types = await this.prisma.dataType.findMany()
+      const dataPack = await this.prisma.dataPack.findMany({
+        where: {
+          id: {
+            in: foundkey.dataPackIds
+          }
+        },
+        include: {
+          Data: {
+            include: {
+              SubData: true
+            }
+          }
+        }
+      })
+      return {
+        statusCode: 200,
+        message: 'Success',
+        types,
+        grades,
+        subjects,
+        topics,
+        data: Array.prototype.concat.apply([], dataPack.map(dtp => dtp.Data)),
+      }
     }
   }
 }

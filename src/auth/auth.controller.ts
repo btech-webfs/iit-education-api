@@ -1,4 +1,4 @@
-import { Controller, Post, Body } from '@nestjs/common';
+import { Controller, Post, Body, Param, Get } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { CreateAuthDto } from './dto/create-auth.dto';
 import { Public } from './decorators/public.decorator';
@@ -11,6 +11,12 @@ export class AuthController {
   @Post('validate-key')
   validate(@Body() createAuthDto: CreateAuthDto) {
     return this.authService.validate(createAuthDto);
+  }
+
+  @Public()
+  @Get('get-data/:key')
+  getData(@Param('key') key: string) {
+    return this.authService.getData(key);
   }
 
   @Public()

@@ -16,11 +16,15 @@ async function bootstrap() {
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api', app, document);
+  SwaggerModule.setup('doc', app, document);
 
   // app.setGlobalPrefix('api');
-  app.use('/uploads', static_('upload'));
-  app.enableCors();
+  app.enableCors({
+    allowedHeaders: '*',
+    origin: '*',
+    credentials: true,
+  });
+  app.use('/uploads', static_('uploads'));
   app.use(json({ limit: '10mb' }));
 
   app.useGlobalPipes(
