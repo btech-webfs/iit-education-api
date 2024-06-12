@@ -1,14 +1,40 @@
-import { Body, Controller, Delete, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { CreateSubjectDto } from './dto/create-subject.dto';
 import { SubjectService } from './subject.service';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { v4 as uuid } from 'uuid';
+import { unlink } from 'fs';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 @Controller('subject')
 export class SubjectController {
-  constructor(private readonly subjectService: SubjectService) { }
+  constructor(private readonly subjectService: SubjectService, private prisma: PrismaService) { }
 
   @Post()
   create(@Body() createSubjectDto: CreateSubjectDto) {
     return this.subjectService.create(createSubjectDto);
+  }
+
+  @Post("upload/:id")
+  @UseInterceptors(FileInterceptor('file', {
+    storage: diskStorage({
+      destination: 'thumbnails/',
+      filename(_req, file, callback) {
+        callback(
+          null,
+          Buffer.from(`${uuid()}.${file.mimetype.split("/").slice(-1)[0]}`, 'latin1').toString(
+            'utf8',
+          ),
+        )
+      },
+    }),
+  }))
+  upload(@Param('id') id: string, @UploadedFile() file: Express.Multer.File) {
+    this.prisma.subject.findUniqueOrThrow({
+      where: { id }
+    }).catch(_ => unlink(file.path, () => { }))
+    return this.subjectService.upload(id, file);
   }
 
   @Get()

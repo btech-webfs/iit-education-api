@@ -9,6 +9,9 @@ export class CreateClientKeyDto {
   @IsOptional()
   limit?: number;
 
+  @IsOptional()
+  decs?: string;
+
   @IsArray()
   @IsString({ each: true })
   @IsOptional()

@@ -13,6 +13,7 @@ datasource db {
 model Device {
   id           String      @id @default(auto()) @map("_id") @db.ObjectId
   duid         String      @unique
+  tv           String?
   authLog      DateTime[]  @default([])
   ClientKeys   ClientKey[] @relation(fields: [clientKeyIds], references: [id])
   clientKeyIds String[]    @db.ObjectId
@@ -35,6 +36,7 @@ model ClientKey {
   id          String     @id @default(auto()) @map("_id") @db.ObjectId
   key         String     @unique
   limit       Int?
+  decs        String?
   Devices     Device[]   @relation(fields: [deviceIds], references: [id])
   deviceIds   String[]   @db.ObjectId
   DataPacks   DataPack[] @relation(fields: [dataPackIds], references: [id])
@@ -47,7 +49,8 @@ model Subject {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
   name      String
   icon      String?
-  desc      String
+  imageIcon String?
+  decs      String
   Topic     Topic[]
   Data      Data[]
   createdAt DateTime @default(now())
@@ -66,7 +69,7 @@ model Topic {
 
 model Grade {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  name      String
+  name      String   @unique
   Data      Data[]   @relation(fields: [dataIds], references: [id])
   dataIds   String[] @db.ObjectId
   createdAt DateTime @default(now())

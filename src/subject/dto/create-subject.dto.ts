@@ -7,6 +7,9 @@ export class CreateSubjectDto {
     @IsOptional()
     icon?: string;
 
+    @IsOptional()
+    imageIcon?: string;
+
     @IsNotEmpty()
-    desc: string;
+    decs: string;
 }

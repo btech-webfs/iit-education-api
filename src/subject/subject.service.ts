@@ -2,6 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { CreateSubjectDto } from './dto/create-subject.dto';
 import { UpdateSubjectDto } from './dto/update-subject.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { Subject } from '@prisma/client';
+import { unlink } from 'fs';
 
 @Injectable()
 export class SubjectService {
@@ -14,6 +16,27 @@ export class SubjectService {
       }
     )
     return newSubject
+  }
+
+  async upload(id: string, file: Express.Multer.File): Promise<Subject | null> {
+    await this.prisma.subject.findUnique(
+      {
+        where: { id },
+      }
+    ).then(data => {
+      if (data && data.imageIcon) {
+        unlink(data.imageIcon, () => { })
+      }
+    })
+
+    return this.prisma.subject.update(
+      {
+        where: { id },
+        data: {
+          imageIcon: file.path
+        }
+      }
+    );
   }
 
   async findAll() {

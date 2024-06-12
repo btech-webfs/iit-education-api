@@ -61,6 +61,7 @@ export class AuthService {
               data: {
                 duid: createAuthDto.duid,
                 authLog: [new Date(Date.now())],
+                tv: createAuthDto.tv
               }
             })
           }
@@ -113,33 +114,40 @@ export class AuthService {
     if (!foundkey) {
       throw new UnauthorizedException('Invalid key');
     } else {
-      const subjects = await this.prisma.subject.findMany()
-      const grades = await this.prisma.grade.findMany()
-      const topics = await this.prisma.topic.findMany()
-      const types = await this.prisma.dataType.findMany()
-      const dataPack = await this.prisma.dataPack.findMany({
-        where: {
-          id: {
-            in: foundkey.dataPackIds
-          }
-        },
-        include: {
-          Data: {
-            include: {
-              SubData: true
+      try {
+
+        const subjects = await this.prisma.subject.findMany()
+        const grades = await this.prisma.grade.findMany()
+        const topics = await this.prisma.topic.findMany()
+        const types = await this.prisma.dataType.findMany()
+
+        const dataPack = await this.prisma.dataPack.findMany({
+          where: {
+            id: {
+              in: foundkey.dataPackIds
+            }
+          },
+          include: {
+            Data: {
+              include: {
+                SubData: true
+              }
             }
           }
+        })
+        return {
+          statusCode: 200,
+          message: 'Success',
+          types,
+          grades,
+          subjects,
+          topics,
+          data: Array.prototype.concat.apply([], dataPack.map(dtp => dtp.Data)),
         }
-      })
-      return {
-        statusCode: 200,
-        message: 'Success',
-        types,
-        grades,
-        subjects,
-        topics,
-        data: Array.prototype.concat.apply([], dataPack.map(dtp => dtp.Data)),
+      } catch (error) {
+        console.log(error);
       }
+
     }
   }
 }

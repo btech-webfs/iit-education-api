@@ -11,6 +11,7 @@ export class DeviceService {
     const newDevice = await this.prisma.device.create({
       data: {
         duid: createDeviceDto.duid,
+        tv: createDeviceDto.tv,
         ClientKeys: createDeviceDto.clientKeyIds && (createDeviceDto.clientKeyIds.length ? {
           connect: createDeviceDto.clientKeyIds.map(id => ({ id }))
         } : undefined)
@@ -38,6 +39,7 @@ export class DeviceService {
       where: { id },
       data: {
         duid: updateDeviceDto.duid,
+        tv: updateDeviceDto.tv,
         ClientKeys: updateDeviceDto.clientKeyIds && (updateDeviceDto.clientKeyIds.length ? {
           connect: updateDeviceDto.clientKeyIds.map(id => ({ id }))
         } : {

@@ -12,6 +12,7 @@ export class ClientKeyService {
     return this.prisma.clientKey.create({
       data: {
         key: createClientKeyDto.key,
+        decs: createClientKeyDto.decs,
         limit: createClientKeyDto.limit,
         DataPacks: createClientKeyDto.dataPackIds && (createClientKeyDto.dataPackIds.length ? {
           connect: createClientKeyDto.dataPackIds.map(id => ({ id }))
@@ -43,6 +44,7 @@ export class ClientKeyService {
       data: {
         key: updateClientKeyDto.key,
         limit: updateClientKeyDto.limit,
+        decs: updateClientKeyDto.decs,
         DataPacks: updateClientKeyDto.dataPackIds && (updateClientKeyDto.dataPackIds.length ? {
           connect: updateClientKeyDto.dataPackIds.map(id => ({ id }))
         } : {

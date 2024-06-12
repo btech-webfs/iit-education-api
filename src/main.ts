@@ -25,6 +25,7 @@ async function bootstrap() {
     credentials: true,
   });
   app.use('/uploads', static_('uploads'));
+  app.use('/thumbnails', static_('thumbnails'));
   app.use(json({ limit: '10mb' }));
 
   app.useGlobalPipes(
