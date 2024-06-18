@@ -6,6 +6,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { v4 as uuid } from 'uuid';
 import { CreateSubDatumDto } from './dto/create-sub_datum.dto';
 import { SubDataService } from './sub_data.service';
+import { Public } from '../auth/decorators/public.decorator';
 
 @Controller('sub-data')
 export class SubDataController {
@@ -55,5 +56,11 @@ export class SubDataController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.subDataService.remove(id);
+  }
+
+  @Get('stream/:file')
+  @Public()
+  getFile(@Param("file") file: string) {
+    return this.subDataService.streamFile(file);
   }
 }

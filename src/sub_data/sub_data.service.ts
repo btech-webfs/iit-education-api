@@ -1,9 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, StreamableFile } from '@nestjs/common';
 import { CreateSubDatumDto } from './dto/create-sub_datum.dto';
 import { UpdateSubDatumDto } from './dto/update-sub_datum.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { SubData } from '@prisma/client';
-import { unlink } from 'fs';
+import { unlink, createReadStream } from 'fs';
+import { join } from "path";
 
 @Injectable()
 export class SubDataService {
@@ -78,5 +79,10 @@ export class SubDataService {
       }
       return subData
     });
+  }
+
+  async streamFile(file: string): Promise<StreamableFile> {
+    const _file = createReadStream(join(process.cwd(), `uploads/${file}`));
+    return new StreamableFile(_file);
   }
 }
