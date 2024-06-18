@@ -19,13 +19,13 @@ async function bootstrap() {
   SwaggerModule.setup('doc', app, document);
 
   // app.setGlobalPrefix('api');
+  app.enableCors({
+    // allowedHeaders: '*',
+    origin: '*',
+    // credentials: true,
+  });
   app.use('/uploads', static_('uploads'));
   app.use('/thumbnails', static_('thumbnails'));
-  app.enableCors({
-    allowedHeaders: '*',
-    origin: '*',
-    credentials: true,
-  });
   app.use(json({ limit: '10mb' }));
 
   app.useGlobalPipes(
