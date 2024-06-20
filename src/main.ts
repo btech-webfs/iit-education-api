@@ -18,16 +18,16 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('doc', app, document);
 
+  app.enableCors({
+    allowedHeaders: '*',
+    origin: '*',
+    credentials: true,
+  });
+
   // app.setGlobalPrefix('api');
   app.use('/uploads', static_('uploads'));
   app.use('/thumbnails', static_('thumbnails'));
   app.use(json({ limit: '10mb' }));
-
-  app.enableCors({
-    // allowedHeaders: '*',
-    origin: '*',
-    // credentials: true,
-  });
 
   app.useGlobalPipes(
     new ValidationPipe({
