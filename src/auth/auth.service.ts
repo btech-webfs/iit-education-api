@@ -118,9 +118,10 @@ export class AuthService {
     if (!foundkey) {
       throw new UnauthorizedException('Invalid key');
     } else {
+      // Default
       const grades = await this.prisma.grade.findMany()
-      const topics = await this.prisma.topic.findMany()
       const types = await this.prisma.dataType.findMany()
+
       const dataPack = await this.prisma.dataPack.findMany({
         where: {
           id: {
@@ -136,7 +137,18 @@ export class AuthService {
         }
       })
       const data: any[] = Array.prototype.concat.apply([], dataPack.map(dtp => dtp.Data))
+      const tpIDs: string[] = [...new Set(data.map(e => e.topicId))]
       const sjIDs: string[] = [...new Set(data.map(e => e.subjectId))]
+
+      const topics = tpIDs.length ? await this.prisma.topic.findMany(
+        {
+          where: {
+            id: {
+              in: tpIDs
+            }
+          }
+        }
+      ) : []
       const subjects = sjIDs.length ? await this.prisma.subject.findMany(
         {
           where: {
@@ -154,7 +166,7 @@ export class AuthService {
         grades,
         subjects,
         topics,
-        data
+        data,
       }
     }
   }
