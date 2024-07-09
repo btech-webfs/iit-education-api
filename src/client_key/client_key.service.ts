@@ -9,19 +9,24 @@ export class ClientKeyService {
   constructor(private prisma: PrismaService) { }
 
   async create(createClientKeyDto: CreateClientKeyDto): Promise<ClientKey | null> {
-    return this.prisma.clientKey.create({
-      data: {
-        key: createClientKeyDto.key,
-        decs: createClientKeyDto.decs,
-        limit: createClientKeyDto.limit,
-        DataPacks: createClientKeyDto.dataPackIds && (createClientKeyDto.dataPackIds.length ? {
-          connect: createClientKeyDto.dataPackIds.map(id => ({ id }))
-        } : undefined),
-        Devices: createClientKeyDto.deviceIds && (createClientKeyDto.deviceIds.length ? {
-          connect: createClientKeyDto.deviceIds.map(id => ({ id }))
-        } : undefined),
-      },
-    });
+    try {
+      return this.prisma.clientKey.create({
+        data: {
+          key: createClientKeyDto.key,
+          decs: createClientKeyDto.decs,
+          limit: createClientKeyDto.limit,
+          expirationDate: createClientKeyDto.expirationDate ? new Date(createClientKeyDto.expirationDate) : createClientKeyDto.expirationDate,
+          DataPacks: createClientKeyDto.dataPackIds && (createClientKeyDto.dataPackIds.length ? {
+            connect: createClientKeyDto.dataPackIds.map(id => ({ id }))
+          } : undefined),
+          Devices: createClientKeyDto.deviceIds && (createClientKeyDto.deviceIds.length ? {
+            connect: createClientKeyDto.deviceIds.map(id => ({ id }))
+          } : undefined),
+        },
+      });
+    } catch (error) {
+      return error;
+    }
   }
 
   async findAll(): Promise<ClientKey[] | []> {
@@ -45,6 +50,7 @@ export class ClientKeyService {
         key: updateClientKeyDto.key,
         limit: updateClientKeyDto.limit,
         decs: updateClientKeyDto.decs,
+        expirationDate: updateClientKeyDto.expirationDate ? new Date(updateClientKeyDto.expirationDate) : updateClientKeyDto.expirationDate,
         DataPacks: updateClientKeyDto.dataPackIds && (updateClientKeyDto.dataPackIds.length ? {
           connect: updateClientKeyDto.dataPackIds.map(id => ({ id }))
         } : {

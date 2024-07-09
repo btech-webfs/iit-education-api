@@ -25,28 +25,10 @@ export class AuthService {
     if (!key) {
       throw new BadRequestException('Invalid key')
     } else {
-      if (!key.limit || key.limit > key.deviceIds.length || key.Devices.length) {
-        if (key.Devices.length) {
-          await this.prisma.device.update({
-            where: {
-              duid: createAuthDto.duid
-            },
-            data: {
-              authLog: {
-                push: new Date(Date.now())
-              }
-            }
-          })
-          return key
-        } else {
-          const device = await this.prisma.device.findUnique({
-            where: {
-              duid: createAuthDto.duid
-            }
-          })
-          let pushDevice = null
-          if (device) {
-            pushDevice = await this.prisma.device.update({
+      if ((key.expirationDate && key.expirationDate.getTime() >= new Date(Date.now()).getTime()) || !key.expirationDate) {
+        if (!key.limit || key.limit > key.deviceIds.length || key.Devices.length) {
+          if (key.Devices.length) {
+            await this.prisma.device.update({
               where: {
                 duid: createAuthDto.duid
               },
@@ -56,40 +38,62 @@ export class AuthService {
                 }
               }
             })
+            return key
           } else {
-            pushDevice = await this.prisma.device.create({
-              data: {
-                duid: createAuthDto.duid,
-                authLog: [new Date(Date.now())],
-                tv: createAuthDto.tv
+            const device = await this.prisma.device.findUnique({
+              where: {
+                duid: createAuthDto.duid
               }
             })
-          }
-          return this.prisma.clientKey.update(
-            {
-              where: {
-                key: createAuthDto.key
-              },
-              data: {
-                Devices: {
-                  connect: {
-                    id: pushDevice.id
+            let pushDevice = null
+            if (device) {
+              pushDevice = await this.prisma.device.update({
+                where: {
+                  duid: createAuthDto.duid
+                },
+                data: {
+                  authLog: {
+                    push: new Date(Date.now())
                   }
                 }
-              },
-              include: {
-                Devices: {
-                  where: {
-                    duid: createAuthDto.duid
+              })
+            } else {
+              pushDevice = await this.prisma.device.create({
+                data: {
+                  duid: createAuthDto.duid,
+                  authLog: [new Date(Date.now())],
+                  tv: createAuthDto.tv
+                }
+              })
+            }
+            return this.prisma.clientKey.update(
+              {
+                where: {
+                  key: createAuthDto.key
+                },
+                data: {
+                  Devices: {
+                    connect: {
+                      id: pushDevice.id
+                    }
                   }
                 },
-                DataPacks: true
+                include: {
+                  Devices: {
+                    where: {
+                      duid: createAuthDto.duid
+                    }
+                  },
+                  DataPacks: true
+                }
               }
-            }
-          )
+            )
+          }
+        } else {
+          throw new ConflictException('The key has been used beyond the limit number of times')
         }
       } else {
-        throw new ConflictException('The key has been used beyond the limit number of times')
+        throw new BadRequestException('Expired key')
       }
     }
   }
@@ -114,40 +118,44 @@ export class AuthService {
     if (!foundkey) {
       throw new UnauthorizedException('Invalid key');
     } else {
-      try {
-
-        const subjects = await this.prisma.subject.findMany()
-        const grades = await this.prisma.grade.findMany()
-        const topics = await this.prisma.topic.findMany()
-        const types = await this.prisma.dataType.findMany()
-
-        const dataPack = await this.prisma.dataPack.findMany({
-          where: {
-            id: {
-              in: foundkey.dataPackIds
-            }
-          },
-          include: {
-            Data: {
-              include: {
-                SubData: true
-              }
+      const grades = await this.prisma.grade.findMany()
+      const topics = await this.prisma.topic.findMany()
+      const types = await this.prisma.dataType.findMany()
+      const dataPack = await this.prisma.dataPack.findMany({
+        where: {
+          id: {
+            in: foundkey.dataPackIds
+          }
+        },
+        include: {
+          Data: {
+            include: {
+              SubData: true
             }
           }
-        })
-        return {
-          statusCode: 200,
-          message: 'Success',
-          types,
-          grades,
-          subjects,
-          topics,
-          data: Array.prototype.concat.apply([], dataPack.map(dtp => dtp.Data)),
         }
-      } catch (error) {
-        console.log(error);
-      }
+      })
+      const data: any[] = Array.prototype.concat.apply([], dataPack.map(dtp => dtp.Data))
+      const sjIDs: string[] = [...new Set(data.map(e => e.subjectId))]
+      const subjects = sjIDs.length ? await this.prisma.subject.findMany(
+        {
+          where: {
+            id: {
+              in: sjIDs
+            }
+          }
+        }
+      ) : []
 
+      return {
+        statusCode: 200,
+        message: 'Success',
+        types,
+        grades,
+        subjects,
+        topics,
+        data
+      }
     }
   }
 }

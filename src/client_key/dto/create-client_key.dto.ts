@@ -12,6 +12,9 @@ export class CreateClientKeyDto {
   @IsOptional()
   decs?: string;
 
+  @IsOptional()
+  expirationDate?: string;
+
   @IsArray()
   @IsString({ each: true })
   @IsOptional()
