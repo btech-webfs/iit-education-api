@@ -10,4 +10,7 @@ export class CreateAuthDto {
 
     @IsOptional()
     tv?: string;
+
+    @IsOptional()
+    reAuth?: boolean;
 }

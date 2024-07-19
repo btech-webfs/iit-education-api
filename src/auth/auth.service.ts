@@ -28,16 +28,18 @@ export class AuthService {
       if ((key.expirationDate && key.expirationDate.getTime() >= new Date(Date.now()).getTime()) || !key.expirationDate) {
         if (!key.limit || key.limit > key.deviceIds.length || key.Devices.length) {
           if (key.Devices.length) {
-            await this.prisma.device.update({
-              where: {
-                duid: createAuthDto.duid
-              },
-              data: {
-                authLog: {
-                  push: new Date(Date.now())
+            if (!createAuthDto.reAuth) {
+              await this.prisma.device.update({
+                where: {
+                  duid: createAuthDto.duid
+                },
+                data: {
+                  authLog: {
+                    push: new Date(Date.now())
+                  }
                 }
-              }
-            })
+              })
+            }
             return key
           } else {
             const device = await this.prisma.device.findUnique({
