@@ -27,7 +27,7 @@ async function bootstrap() {
   // app.setGlobalPrefix('api');
   app.use('/uploads', static_('uploads'));
   app.use('/thumbnails', static_('thumbnails'));
-  app.use(json({ limit: '10mb' }));
+  app.use(json({ limit: '250mb' }));
 
   app.useGlobalPipes(
     new ValidationPipe({
