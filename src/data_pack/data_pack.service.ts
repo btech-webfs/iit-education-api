@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreateDataPackDto } from './dto/create-data_pack.dto';
 import { UpdateDataPackDto } from './dto/update-data_pack.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -29,13 +29,28 @@ export class DataPackService {
   }
 
   async update(id: string, updateDataPackDto: UpdateDataPackDto) {
-    const updatedDataPack = await this.prisma.dataPack.update(
-      {
-        where: { id },
-        data: updateDataPackDto
+    let foundDataPack = await this.prisma.dataPack.findUnique({ where: { id: id } });
+    if (!foundDataPack) {
+      throw new BadRequestException("Data Package not found")
+    } else {
+      if (updateDataPackDto.dataIds) {
+        foundDataPack = await this.prisma.dataPack.update(
+          {
+            where: { id },
+            data: {
+              Data: {
+                connect: updateDataPackDto.dataIds.map(id => ({ id }))
+              },
+            }
+          }
+        )
       }
-    )
-    return updatedDataPack
+      if (updateDataPackDto.clientKeyIds) {
+
+      }
+    }
+
+    return foundDataPack;
   }
 
   async remove(id: string) {

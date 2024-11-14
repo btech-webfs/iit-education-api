@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Post, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Res, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { unlink } from 'fs';
 import { diskStorage } from 'multer';
@@ -7,6 +7,7 @@ import { v4 as uuid } from 'uuid';
 import { CreateSubDatumDto } from './dto/create-sub_datum.dto';
 import { SubDataService } from './sub_data.service';
 import { Public } from '../auth/decorators/public.decorator';
+import { Response } from 'express';
 
 @Controller('sub-data')
 export class SubDataController {
@@ -60,7 +61,7 @@ export class SubDataController {
 
   @Get('stream/:file')
   @Public()
-  getFile(@Param("file") file: string) {
-    return this.subDataService.streamFile(file);
+  getFile(@Param("file") file: string, @Res() res: Response) {
+    return this.subDataService.streamFile(file, res);
   }
 }

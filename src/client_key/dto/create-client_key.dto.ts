@@ -9,6 +9,10 @@ export class CreateClientKeyDto {
   @IsOptional()
   limit?: number;
 
+  @Type(() => Number)
+  @IsOptional()
+  randomKeys?: number;
+
   @IsOptional()
   decs?: string;
 

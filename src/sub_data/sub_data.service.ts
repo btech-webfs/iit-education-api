@@ -1,14 +1,16 @@
-import { Injectable, StreamableFile } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { CreateSubDatumDto } from './dto/create-sub_datum.dto';
 import { UpdateSubDatumDto } from './dto/update-sub_datum.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { SubData } from '@prisma/client';
-import { unlink, createReadStream } from 'fs';
-import { join } from "path";
+import { unlink } from 'fs';
+import { lastValueFrom } from 'rxjs';
+import { HttpService } from '@nestjs/axios';
+import { Response } from 'express';
 
 @Injectable()
 export class SubDataService {
-  constructor(private prisma: PrismaService) { }
+  constructor(private prisma: PrismaService, private readonly httpService: HttpService) { }
 
   async create(createSubDatumDto: CreateSubDatumDto): Promise<SubData | null> {
     return this.prisma.subData.create({
@@ -81,8 +83,15 @@ export class SubDataService {
     });
   }
 
-  async streamFile(file: string): Promise<StreamableFile> {
-    const _file = createReadStream(join(process.cwd(), `uploads/${file}`));
-    return new StreamableFile(_file);
+  async streamFile(file: string, res: Response): Promise<void> {
+    const response = this.httpService.get(`https://cdn.iit.vn/iit_education/uploads/${file}`, { responseType: 'stream' });
+
+    const stream = await lastValueFrom(response);
+
+    res.setHeader('Content-Type', stream.headers['content-type']);
+    res.setHeader('Content-Length', stream.headers['content-length']);
+    res.setHeader('Content-Disposition', `attachment; filename="${stream.headers['file-name'] || 'downloadedFile'}"`);
+
+    stream.data.pipe(res);
   }
 }

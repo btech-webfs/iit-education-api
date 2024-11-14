@@ -20,6 +20,11 @@ export class ClientKeyController {
     return this.clientKeyService.create(createClientKeyDto);
   }
 
+  @Post('/random')
+  createRandom(@Body() createClientKeyDto: CreateClientKeyDto) {
+    return this.clientKeyService.createRandom(createClientKeyDto);
+  }
+
   @Get()
   findAll() {
     return this.clientKeyService.findAll();
@@ -30,16 +35,27 @@ export class ClientKeyController {
     return this.clientKeyService.findOne(id);
   }
 
-  @Patch(':id')
+  @Patch()
   update(
-    @Param('id') id: string,
-    @Body() updateClientKeyDto: UpdateClientKeyDto,
+    @Param('id') id: string, @Body() updateClientKeyDto: UpdateClientKeyDto,
   ) {
     return this.clientKeyService.update(id, updateClientKeyDto);
+  }
+
+  @Patch('/many')
+  updateMany(
+    @Body() updateClientKeyDto: UpdateClientKeyDto,
+  ) {
+    return this.clientKeyService.updateMany(updateClientKeyDto);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.clientKeyService.remove(id);
+  }
+
+  @Post('/delete_many')
+  removeMany(@Body() updateClientKeyDto: UpdateClientKeyDto) {
+    return this.clientKeyService.removeMany(updateClientKeyDto);
   }
 }

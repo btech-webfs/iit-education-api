@@ -12,9 +12,10 @@ import { PrismaModule } from './prisma/prisma.module';
 import { DataModule } from './data/data.module';
 import { SubDataModule } from './sub_data/sub_data.module';
 import { AuthModule } from './auth/auth.module';
+import { HttpModule } from '@nestjs/axios';
 
 @Module({
-  imports: [SubjectModule, GradeModule, TopicModule, DataTypeModule, ClientKeyModule, DataPackModule, DeviceModule, PrismaModule, DataModule, SubDataModule, AuthModule],
+  imports: [SubjectModule, GradeModule, TopicModule, DataTypeModule, ClientKeyModule, DataPackModule, DeviceModule, PrismaModule, DataModule, SubDataModule, AuthModule, HttpModule],
   controllers: [AppController],
   providers: [AppService],
 })
