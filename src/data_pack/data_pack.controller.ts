@@ -27,6 +27,11 @@ export class DataPackController {
     return this.dataPackService.update(id, updateDataPackDto);
   }
 
+  @Patch('/copy/:id')
+  copy(@Param('id') id: string, @Body() updateDataPackDto: UpdateDataPackDto) {
+    return this.dataPackService.copy(id, updateDataPackDto);
+  }
+
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.dataPackService.remove(id);

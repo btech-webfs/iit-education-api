@@ -53,6 +53,30 @@ export class DataPackService {
     return foundDataPack;
   }
 
+  async copy(id: string, updateDataPackDto: UpdateDataPackDto) {
+    let foundDataPack = await this.prisma.dataPack.findUnique({ where: { id: id } });
+    if (!foundDataPack) {
+      throw new BadRequestException("Data Package not found")
+    } else {
+      if (updateDataPackDto.fromDataPackId) {
+        let foundFromDataPack = await this.prisma.dataPack.findUnique({ where: { id: updateDataPackDto.fromDataPackId } });
+        foundDataPack = await this.prisma.dataPack.update(
+          {
+            where: { id },
+            data: {
+              Data: {
+                connect: foundFromDataPack.dataIds.map(id => ({ id })),
+              },
+            }
+          }
+        )
+      } else {
+        throw new BadRequestException("Copy Data Package not found")
+      }
+    }
+    return foundDataPack;
+  }
+
   async remove(id: string) {
     const clientKeys = await this.prisma.clientKey.findMany({
       where: {
