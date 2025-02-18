@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { CreateSubDatumDto } from './dto/create-sub_datum.dto';
 import { UpdateSubDatumDto } from './dto/update-sub_datum.dto';
+import { CreateManySubDatumDto } from './dto/create_many-sub_datum.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { SubData } from '@prisma/client';
 import { unlink } from 'fs';
@@ -24,6 +25,12 @@ export class SubDataService {
         }
       }
     })
+  }
+
+  async createMany(createManySubDatumDto: CreateManySubDatumDto): Promise<SubData[] | null> {
+    return await this.prisma.$transaction(
+      createManySubDatumDto.subData.map((sd) => this.prisma.subData.create({ data: sd })),
+    );
   }
 
   async upload(id: string, file: Express.Multer.File): Promise<SubData | null> {
@@ -58,16 +65,11 @@ export class SubDataService {
   }
 
   async update(id: string, updateSubDatumDto: UpdateSubDatumDto): Promise<SubData | null> {
-    return this.prisma.subData.update({
+    return await this.prisma.subData.update({
       where: { id },
       data: {
         name: updateSubDatumDto.name,
         decs: updateSubDatumDto.decs,
-        Data: updateSubDatumDto.dataId ? {
-          connect: {
-            id: updateSubDatumDto.dataId
-          }
-        } : undefined
       }
     })
   }

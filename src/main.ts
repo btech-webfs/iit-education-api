@@ -3,7 +3,7 @@ import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ValidationPipe } from '@nestjs/common';
 import { PrismaExceptionFilter } from './exception_filter/prisma-exception.filter';
-import { json, static as static_ } from 'express';
+import { json, static as static_, urlencoded } from 'express';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -27,7 +27,13 @@ async function bootstrap() {
   // app.setGlobalPrefix('api');
   // app.use('/uploads', static_('uploads'));
   app.use('/thumbnails', static_('thumbnails'));
-  app.use(json({ limit: '10mb' }));
+  app.use(json({ limit: '200mb' }));
+  app.use(urlencoded({ limit: '200mb', extended: true }));
+
+  app.use((req, res, next) => {
+    console.log('Method:', req.method, req.headers['x-original-uri'], req.headers['content-length']);
+    next();
+  });
 
   app.useGlobalPipes(
     new ValidationPipe({

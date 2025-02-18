@@ -1,6 +1,7 @@
-import { Body, Controller, Delete, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Patch } from '@nestjs/common';
 import { DataService } from './data.service';
 import { CreateDatumDto } from './dto/create-datum.dto';
+import { UpdateDatumDto } from './dto/update-datum.dto';
 
 @Controller('data')
 export class DataController {
@@ -21,13 +22,13 @@ export class DataController {
     return this.dataService.findOne(id);
   }
 
-  // @Patch(':id')
-  // update(@Param('id') id: string, @Body() updateDatumDto: UpdateDatumDto) {
-  //   return this.dataService.update(id, updateDatumDto);
-  // }
+  @Patch(':id')
+  update(@Param('id') id: string, @Body() updateDatumDto: UpdateDatumDto) {
+    return this.dataService.update(id, updateDatumDto);
+  }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.dataService.remove(id);
+  @Delete()
+  remove(@Body() body: any) {
+    return this.dataService.remove(body);
   }
 }

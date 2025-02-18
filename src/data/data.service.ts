@@ -1,8 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreateDatumDto } from './dto/create-datum.dto';
 import { UpdateDatumDto } from './dto/update-datum.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Data } from '@prisma/client';
+import { unlink } from 'fs';
 
 @Injectable()
 export class DataService {
@@ -52,69 +53,144 @@ export class DataService {
   }
 
   async update(id: string, updateDatumDto: UpdateDatumDto): Promise<Data | null> {
-    return this.prisma.data.update({
+    const foundData = await this.prisma.data.findUnique({
+      where: { id }
+    })
+    if (!foundData) {
+      throw new BadRequestException("Data not found")
+    } else {
+      if (updateDatumDto.gradeIds) {
+        if (updateDatumDto.gradeIds.length === 0) {
+          await this.prisma.data.update(
+            {
+              where: { id },
+              data: {
+                Grades: {
+                  disconnect: foundData.gradeIds.map(id => ({ id }))
+                },
+              }
+            }
+          )
+        } else {
+          const disconnectGradeIds = foundData.gradeIds.filter(element => !updateDatumDto.gradeIds.includes(element));
+          const connectGradeIds = updateDatumDto.gradeIds.filter(element => !foundData.gradeIds.includes(element));
+          if (disconnectGradeIds.length) {
+            await this.prisma.data.update(
+              {
+                where: { id },
+                data: {
+                  Grades: {
+                    disconnect: disconnectGradeIds.map(id => ({ id }))
+                  },
+                }
+              }
+            )
+          }
+          if (connectGradeIds.length) {
+            await this.prisma.data.update(
+              {
+                where: { id },
+                data: {
+                  Grades: {
+                    connect: connectGradeIds.map(id => ({ id }))
+                  },
+                }
+              }
+            )
+          }
+        }
+      }
+    }
+
+    return await this.prisma.data.update({
       where: { id },
       data: {
-        Subject: updateDatumDto.subjectId && {
-          connect: {
-            id: updateDatumDto.subjectId
-          }
-        },
-        Topic: updateDatumDto.topicId && {
-          connect: {
-            id: updateDatumDto.topicId
-          }
-        },
-        Grades: updateDatumDto.gradeIds && (updateDatumDto.gradeIds.length ? {
-          connect: updateDatumDto.gradeIds.map(id => ({ id }))
-        } : {
-          set: []
-        }),
-        Type: {
-          connect: updateDatumDto.dataTypeId && {
-            id: updateDatumDto.dataTypeId
-          }
-        },
-        DataPacks: updateDatumDto.dataPackIds && (updateDatumDto.dataPackIds.length ? {
-          connect: updateDatumDto.dataPackIds.map(id => ({ id }))
-        } : {
-          set: []
-        }),
         name: updateDatumDto.name,
         thumbnail: updateDatumDto.thumbnail,
         author: updateDatumDto.author,
         uses: updateDatumDto.uses,
         decs: updateDatumDto.decs,
+        subjectId: updateDatumDto.subjectId,
+        topicId: updateDatumDto.topicId,
+        dataTypeId: updateDatumDto.dataTypeId,
       }
     });
   }
 
-  async remove(id: string): Promise<Data | null> {
-    const dataPacks = await this.prisma.dataPack.findMany({
+  async remove(body: any) {
+    const { dataIds } = body;
+
+    const subData = await this.prisma.subData.findMany({
       where: {
-        clientKeyIds: {
-          has: id
+        dataId: {
+          in: dataIds
         }
       }
     })
 
-    if (dataPacks?.length) {
-      for await (const dtP of dataPacks) {
-        await this.prisma.dataPack.update(
-          {
-            where: { id: dtP.id },
-            data: {
-              Data: {
-                disconnect: { id }
-              }
+    const dataPacks = await this.prisma.dataPack.findMany({
+      where: {
+        dataIds: {
+          hasSome: dataIds
+        }
+      }
+    })
+
+    const grades = await this.prisma.grade.findMany({
+      where: {
+        dataIds: {
+          hasSome: dataIds
+        }
+      }
+    })
+
+    if (subData.length) {
+      for await (const sdt of subData) {
+        if (sdt.url) {
+          unlink(sdt.url, () => { })
+        }
+      }
+      await this.prisma.subData.deleteMany({
+        where: {
+          id: { in: subData.map(e => e.id) }
+        }
+      })
+    }
+
+    if (dataPacks.length) {
+      for await (const dtp of dataPacks) {
+        await this.prisma.dataPack.update({
+          where: {
+            id: dtp.id
+          },
+          data: {
+            Data: {
+              disconnect: dataIds.map(e => ({ id: e })),
             }
           }
-        )
+        })
       }
     }
 
-    return this.prisma.data.delete({
-      where: { id }
-    });
+    if (grades.length) {
+      for await (const grd of grades) {
+        await this.prisma.grade.update({
+          where: {
+            id: grd.id
+          },
+          data: {
+            Data: {
+              disconnect: dataIds.map(e => ({ id: e })),
+            }
+          }
+        })
+      }
+    }
+
+    return await this.prisma.data.deleteMany({
+      where: {
+        id: { in: dataIds }
+      }
+    },);
   }
 }
