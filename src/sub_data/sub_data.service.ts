@@ -86,7 +86,7 @@ export class SubDataService {
   }
 
   async streamFile(file: string, res: Response): Promise<void> {
-    const response = this.httpService.get(`https://cdn.iit.vn/iit_education/uploads/${file}`, { responseType: 'stream' });
+    const response = this.httpService.get(`${process.env.CDN}${file}`, { responseType: 'stream' });
 
     const stream = await lastValueFrom(response);
 
